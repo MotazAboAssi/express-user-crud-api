@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "clear && nodemon app.js"
+    "server": "clear && nodemon --trace-warnings app.js"
   },
   "keywords": [],
   "author": "",
