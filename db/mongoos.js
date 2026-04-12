@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-async function connection() {
+async function connectionDB() {
     try {
         const connect = await mongoose.connect('mongodb://localhost:27017/express-user-crud-api');
         console.log('✅ Connection MongoDB');
@@ -8,4 +8,7 @@ async function connection() {
     }
 }
 
-module.exports = { connection };
+module.exports = { connectionDB };
+
+
+

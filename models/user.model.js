@@ -3,7 +3,8 @@ const { model, Schema } = require('mongoose');
 const userType = new Schema({
     fullName: {
         type: String,
-        require: true
+        require: true,
+        alias : 'full_name'
     },
     email: {
         type: String,

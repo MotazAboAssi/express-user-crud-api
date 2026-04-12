@@ -1,12 +1,14 @@
 const express = require('express');
-const app = express();
+const userRouter = require('./router/user.route');
+const { connectionDB } = require('./db/mongoos');
+const bodyParser = require('body-parser');
 
+const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Hello World' });
-})
-
+connectionDB()
+app.use(express.json())
+app.use(userRouter)
 app.listen(port, () => {
     console.log(`http://localhost:${port}/`)
 })
