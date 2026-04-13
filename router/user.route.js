@@ -18,9 +18,8 @@ userRouter.post('/', async (req, res) => {
     let user = await req.body;
     if (user !== undefined) {
         try {
-            user['password'] = bcrypt.hashSync(user['password'], 10);
             const newUser = new User(user);
-            await newUser.save();
+             newUser.save();
             const { password, ...secureUser } = user;
             return res.status(200).json({
                 status: 'Success',
