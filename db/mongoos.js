@@ -6,6 +6,7 @@ async function connectionDB() {
         console.log('✅ Connection MongoDB');
     } catch (error) {
         console.log('❌ Connection MongoDB');
+        throw new Error('❌ Connection MongoDB');
     }
     return connect;
 }
