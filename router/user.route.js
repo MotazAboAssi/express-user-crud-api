@@ -65,15 +65,23 @@ userRouter.get('/:id', async (req, res) => {
 userRouter.put('/:id', async (req, res) => {
     const _id = req.params.id
     const userInfo = req.body;
+
     let user;
     try {
-        user = await User.findByIdAndUpdate(_id, { $set: userInfo }, { new: true })
+        // user = await User.findByIdAndUpdate(_id, { $set: userInfo }, { new: true, runValidators:true })
+        user = await User.findById(_id)
+        if (!user)
+            throw new Error('User not found')
+        const keys = Object.keys(userInfo)
+        keys.forEach((key) => user[key] = userInfo[key])
+        console.log(user)
+        await user.save();
     } catch (error) {
         return response(res, false, {
-            message: 'User not found'
+            message: error.message
         })
     }
-    if (_id !== undefined && !!user) {
+    if (!!user) {
         const { password, __v, ...secureUser } = user._doc
         return response(res, true, {
             optional: {
