@@ -1,38 +1,37 @@
 const { model, Schema } = require('mongoose');
 const bcryptjs = require('bcryptjs');
+const validatore = require('validator')
 
 const userSchema = new Schema({
     fullName: {
-        required: true,
+        required: [true, (p) => `${p.path} is required`],
         type: String,
         alias: 'full_name',
         minLength: 6,
-        validate(val) {
-            if (!validator.isAlpha(val)) {
-                return "Full Name mustn't number or sympol"
-            }
-            return null;
-        }
+        validate: [{
+            validator: function (v) {
+                return validatore.isAlpha(v.replaceAll(' ', ''));
+            },
+            message: props => `${props.value} mustn't include number or sympol`
+        }],
     },
     email: {
-        required: true,
+        required: [true, (p) => `${p.path} is required`],
         type: String,
         unique: true,
-        validate(val) {
-            if (!validator.isEmail(val))
-                return 'wrong syntax email'
-            return null;
-        }
+        validate: [{
+            validator: (val) => validatore.isEmail(val),
+            message: 'wrong syntax email'
+        }]
 
     },
     password: {
-        required: true,
+        required: [true, (p) => `${p.path} is required`],
         type: String,
-        validate(val) {
-            if (!validator.isStrongPassword(val))
-                return 'Password not Strong';
-            return null;
-        }
+        validate: [{
+            validator: (val) => validatore.isStrongPassword(val),
+            message: 'Password not Strong'
+        }]
     }
 })
 userSchema.pre("save", async function () {
