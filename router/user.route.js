@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require('bcryptjs');
 const { User } = require('./../models/user.model');
+const { response } = require('./../helpers/response')
 
 const userRouter = express.Router();
 
@@ -11,32 +12,30 @@ userRouter.get('/', async (req, res) => {
         const { __v, password, ...secureUser } = user._doc;
         return secureUser;
     })
-    res.status(200).json(secureUsers)
+    return response(res, true, { optional: { users: secureUsers } })
 });
 // POST
-userRouter.post('/', async (req, res) => {
+userRouter.post('/', async function (req, res) {
     let user = await req.body;
     if (user !== undefined) {
         try {
             const newUser = new User(user);
-             newUser.save();
+            await newUser.save();
             const { password, ...secureUser } = user;
-            return res.status(200).json({
-                status: 'Success',
-                user: secureUser
+            return response(res, true, {
+                optional: {
+                    user: secureUser
+                }
             })
         } catch (error) {
-            return res.status(400).json({
-                status: 'Faild',
+            return response(res, false, {
                 message: error.message
             })
-
         }
     }
     else {
-        return res.status(400).json({
-            status: 'Faild',
-            message: 'No user Info'
+        return response(res, false, {
+            message: 'No User Info'
         })
     }
 });
@@ -47,38 +46,68 @@ userRouter.get('/:id', async (req, res) => {
         const user = await User.find({ _id })
         if (user.length !== 0) {
             const { password, __v, ...secureUser } = user['0']._doc
-            res.status(200).json({ status: 'Success', user: secureUser })
+            return response(res, true, {
+                optional: {
+                    user: secureUser
+                }
+            })
         } else
-            res.status(400).json({ status: 'Faild', message: 'user not found' })
+            return response(res, false, {
+                message: 'User not found'
+            })
     } else {
-        res.status(400).json({ status: 'Faild', message: error.message })
+        return response(res, false, {
+            message: error.message
+        })
     }
 })
 // PUT :id
 userRouter.put('/:id', async (req, res) => {
     const _id = req.params.id
     const userInfo = req.body;
-    if (_id !== undefined) {
-        const user = await User.findByIdAndUpdate(_id, { $set: userInfo }, { new: true })
+    let user;
+    try {
+        user = await User.findByIdAndUpdate(_id, { $set: userInfo }, { new: true })
+    } catch (error) {
+        return response(res, false, {
+            message: 'User not found'
+        })
+    }
+    if (_id !== undefined && !!user) {
         const { password, __v, ...secureUser } = user._doc
-        res.status(200).json({ status: 'Success', secureUser })
+        return response(res, true, {
+            optional: {
+                user: secureUser
+            }
+        })
     } else {
-        res.status(400).json({ status: 'Faild', message: error.message })
+        return response(res, false, {
+            message: 'User not found'
+        })
     }
 })
 // DELETE :id
 userRouter.delete('/:id', async (req, res) => {
     const _id = req.params.id
-    if (_id !== undefined) {
-        const user = await User.findByIdAndDelete(_id);
-        if (user !== null) {
-            const { password, __v, ...secureUser } = user._doc
-            res.status(200).json({ status: 'Success', secureUser })
-        }
-        else
-            res.status(400).json({ status: 'Faild', message: 'User not found' })
+    let user;
+    try {
+        user = await User.findByIdAndDelete(_id)
+    } catch (error) {
+        return response(res, false, {
+            message: 'User not found'
+        })
+    }
+    if (_id !== undefined && !!user) {
+        const { password, __v, ...secureUser } = user._doc
+        return response(res, true, {
+            optional: {
+                user: secureUser
+            }
+        })
     } else {
-        res.status(400).json({ status: 'Faild', message: error.message })
+        return response(res, false, {
+            message: 'User not found'
+        })
     }
 })
 
