@@ -1,5 +1,5 @@
-function response(res, isSuccess, { status = isSuccess ? 200 : 400, message = undefined, optional = {} }) {
-    return res.status(status).json({
+function response(res, isSuccess, { code = isSuccess ? 200 : 400, message = undefined, optional = {} }) {
+    return res.status(code).json({
         status: isSuccess ? 'Success' : 'Faild',
         message,
         ...optional

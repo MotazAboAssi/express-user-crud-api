@@ -35,6 +35,7 @@ userRouter.post('/', async function (req, res) {
     }
     else {
         return response(res, false, {
+            code: 404,
             message: 'No User Info'
         })
     }
@@ -53,6 +54,7 @@ userRouter.get('/:id', async (req, res) => {
             })
         } else
             return response(res, false, {
+                code: 404,
                 message: 'User not found'
             })
     } else {
@@ -68,17 +70,25 @@ userRouter.put('/:id', async (req, res) => {
 
     let user;
     try {
-        // user = await User.findByIdAndUpdate(_id, { $set: userInfo }, { new: true, runValidators:true })
         user = await User.findById(_id)
         if (!user)
-            throw new Error('User not found')
+            return response(res, false, {
+                code: 404,
+                message: 'User not found'
+            })
         const keys = Object.keys(userInfo)
         keys.forEach((key) => user[key] = userInfo[key])
         console.log(user)
         await user.save();
     } catch (error) {
+        if (error.name === 'CastError') {
+            return response(res, false, {
+                code: 404,
+                message: 'User not found'
+            })
+        }
         return response(res, false, {
-            message: error.message
+            message: error
         })
     }
     if (!!user) {
@@ -90,6 +100,7 @@ userRouter.put('/:id', async (req, res) => {
         })
     } else {
         return response(res, false, {
+            code: 404,
             message: 'User not found'
         })
     }
@@ -102,6 +113,7 @@ userRouter.delete('/:id', async (req, res) => {
         user = await User.findByIdAndDelete(_id)
     } catch (error) {
         return response(res, false, {
+            code: 404,
             message: 'User not found'
         })
     }
@@ -114,6 +126,7 @@ userRouter.delete('/:id', async (req, res) => {
         })
     } else {
         return response(res, false, {
+            code: 404,
             message: 'User not found'
         })
     }
