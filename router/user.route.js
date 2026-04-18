@@ -1,7 +1,7 @@
 const express = require("express");
 const { User } = require('./../models/user.model');
 const { response } = require('./../helpers/response');
-const { isEmptyOrUndefineObject } = require("../helpers/isEmptyObject");
+const { isNotEmptyOrUndefineObject } = require("../helpers/isEmptyObject");
 const userRouter = express.Router();
 
 // GET 
@@ -12,7 +12,7 @@ userRouter.get('/', async (req, res) => {
 // POST
 userRouter.post('/', async function (req, res) {
     let info = await req.body;
-    if (!isEmptyOrUndefineObject(info)) {
+    if (isNotEmptyOrUndefineObject(info)) {
         try {
             const user = new User(info);
             await user.save();
@@ -36,7 +36,7 @@ userRouter.post('/', async function (req, res) {
 userRouter.get('/:id', async (req, res) => {
     const _id = req.params.id
     const user = await User.findById(_id)
-    if (!isEmptyOrUndefineObject(user)) {
+    if (isNotEmptyOrUndefineObject(user)) {
         return response(res, true, {
             optional: { user }
         })

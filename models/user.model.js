@@ -1,7 +1,7 @@
 const { model, Schema } = require('mongoose');
 const bcryptjs = require('bcryptjs');
 const validatore = require('validator');
-const { isEmptyOrUndefineObject } = require("../helpers/isEmptyObject");
+const { isNotEmptyOrUndefineObject } = require("../helpers/isEmptyObject");
 const { response } = require('./../helpers/response');
 const jsonwebtoken = require('jsonwebtoken');
 
@@ -52,7 +52,7 @@ userSchema.pre("save", async function () {
 })
 
 userSchema.statics.findByCredentials = async (infoUser) => {
-    if (!isEmptyOrUndefineObject(infoUser)) {
+    if (isNotEmptyOrUndefineObject(infoUser)) {
         const user = await User.findOne({ email: infoUser.email });
         if (user && user.isMatchPassword(infoUser.password)) {
             const token = user.generateToken()
