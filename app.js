@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const userRouter = require('./router/user.route');
 const { connectionDB } = require('./db/mongoos');
@@ -5,7 +6,7 @@ const bodyParser = require('body-parser');
 const { response } = require('./helpers/response');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const connect = connectionDB()
 
