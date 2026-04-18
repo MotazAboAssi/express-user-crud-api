@@ -1,31 +1,23 @@
 const express = require("express");
-const bcrypt = require('bcryptjs');
 const { User } = require('./../models/user.model');
-const { response } = require('./../helpers/response')
-
+const { response } = require('./../helpers/response');
+const { isEmptyOrUndefineObject } = require("../helpers/isEmptyObject");
 const userRouter = express.Router();
 
 // GET 
 userRouter.get('/', async (req, res) => {
     const users = await User.find({});
-    const secureUsers = users.map((user) => {
-        const { __v, password, ...secureUser } = user._doc;
-        return secureUser;
-    })
-    return response(res, true, { optional: { users: secureUsers } })
+    return response(res, true, { optional: { users: users } })
 });
 // POST
 userRouter.post('/', async function (req, res) {
-    let user = await req.body;
-    if (user !== undefined) {
+    let info = await req.body;
+    if (!isEmptyOrUndefineObject(info)) {
         try {
-            const newUser = new User(user);
-            await newUser.save();
-            const { password, ...secureUser } = user;
+            const user = new User(info);
+            await user.save();
             return response(res, true, {
-                optional: {
-                    user: secureUser
-                }
+                optional: { user }
             })
         } catch (error) {
             return response(res, false, {
@@ -43,43 +35,34 @@ userRouter.post('/', async function (req, res) {
 // GET :id
 userRouter.get('/:id', async (req, res) => {
     const _id = req.params.id
-    if (_id !== undefined) {
-        const user = await User.find({ _id })
-        if (user.length !== 0) {
-            const { password, __v, ...secureUser } = user['0']._doc
-            return response(res, true, {
-                optional: {
-                    user: secureUser
-                }
-            })
-        } else
-            return response(res, false, {
-                code: 404,
-                message: 'User not found'
-            })
-    } else {
-        return response(res, false, {
-            message: error.message
+    const user = await User.findById(_id)
+    if (!isEmptyOrUndefineObject(user)) {
+        return response(res, true, {
+            optional: { user }
         })
-    }
+    } else
+        return response(res, false, {
+            code: 404,
+            message: 'User not found'
+        })
+
 })
 // PUT :id
 userRouter.put('/:id', async (req, res) => {
     const _id = req.params.id
     const userInfo = req.body;
 
-    let user;
     try {
-        user = await User.findById(_id)
+       const user = await User.findById(_id)
         if (!user)
             return response(res, false, {
                 code: 404,
                 message: 'User not found'
-            })
+            });
         const keys = Object.keys(userInfo)
         keys.forEach((key) => user[key] = userInfo[key])
-        console.log(user)
         await user.save();
+        return response(res, true, { optional: { user } })
     } catch (error) {
         if (error.name === 'CastError') {
             return response(res, false, {
@@ -91,47 +74,36 @@ userRouter.put('/:id', async (req, res) => {
             message: error
         })
     }
-    if (!!user) {
-        const { password, __v, ...secureUser } = user._doc
-        return response(res, true, {
-            optional: {
-                user: secureUser
-            }
-        })
-    } else {
-        return response(res, false, {
-            code: 404,
-            message: 'User not found'
-        })
-    }
+
 })
 // DELETE :id
 userRouter.delete('/:id', async (req, res) => {
     const _id = req.params.id
-    let user;
     try {
-        user = await User.findByIdAndDelete(_id)
+        const user = await User.findByIdAndDelete(_id)
+        return response(res, true, { optional: { user } })
     } catch (error) {
         return response(res, false, {
             code: 404,
             message: 'User not found'
         })
     }
-    if (_id !== undefined && !!user) {
-        const { password, __v, ...secureUser } = user._doc
-        return response(res, true, {
-            optional: {
-                user: secureUser
-            }
-        })
-    } else {
-        return response(res, false, {
-            code: 404,
-            message: 'User not found'
-        })
-    }
 })
 
-
+// login user
+userRouter.post('/login', async (req, res) => {
+    const info = await req.body;
+    try {
+        const { user, token } = await User.findByCredentials(info);
+        return response(res, true, {
+            message: 'Login Success',
+            optional: { user, token }
+        });
+    } catch (error) {
+        return response(res, false, {
+            message: error.message
+        });
+    }
+})
 
 module.exports = userRouter
