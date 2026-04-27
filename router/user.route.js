@@ -35,16 +35,26 @@ userRouter.post('/', async function (req, res) {
 // GET :id
 userRouter.get('/:id', async (req, res) => {
     const _id = req.params.id
-    const user = await User.findById(_id)
-    if (isNotEmptyOrUndefineObject(user)) {
-        return response(res, true, {
-            optional: { user }
-        })
-    } else
+    try {
+        const user = await User.findById(_id)
+        if (isNotEmptyOrUndefineObject(user)) {
+            return response(res, true, {
+                optional: { user }
+            })
+        } else
+            return response(res, false, {
+                code: 404,
+                message: 'User not found'
+            })
+    } catch (error) {
         return response(res, false, {
             code: 404,
             message: 'User not found'
         })
+
+    }
+
+
 
 })
 // PUT :id
@@ -53,7 +63,7 @@ userRouter.put('/:id', async (req, res) => {
     const userInfo = req.body;
 
     try {
-       const user = await User.findById(_id)
+        const user = await User.findById(_id)
         if (!user)
             return response(res, false, {
                 code: 404,

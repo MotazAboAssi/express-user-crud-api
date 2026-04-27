@@ -4,12 +4,15 @@ const userRouter = require('./router/user.route');
 const { connectionDB } = require('./db/mongoos');
 const bodyParser = require('body-parser');
 const { response } = require('./helpers/response');
+const cors = require('cors')
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 const connect = connectionDB()
-
+// app.use(cors({
+//     origin: 'http://localhost:5173'
+// }));
 app.use(express.json())
 app.use(async (req, res, next) => {
     if (!(await connect)) {
